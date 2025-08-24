@@ -22,18 +22,23 @@ st.markdown("""
 """)
 
 # ==============================
-# Tratamento de erro para carregamento do arquivo
+# Acessando o arquivo de dados de forma robusta
+# O nome do arquivo foi fornecido por você
+# e é tratado como um arquivo carregado.
 # ==============================
-file_path = "dados-completos-Ituano.csv"
+file_name = "dados-completos-Ituano.csv"
 
-# Usando um bloco try-except para capturar o erro de arquivo não encontrado
 try:
-    df = pd.read_csv(file_path)
-except FileNotFoundError:
-    st.error(f"Erro: O arquivo '{file_path}' não foi encontrado. Por favor, verifique se o arquivo está na mesma pasta do seu script Python.")
-    st.stop()
+    # Acessa o arquivo carregado
+    csv_content = __content_fetcher__.fetch(
+        query=file_name,
+        source_references=[{"id": "uploaded:dados-completos-Ituano.csv", "type": "uploaded"}]
+    )
+    # Lê o conteúdo do CSV a partir da string na memória
+    df = pd.read_csv(io.StringIO(csv_content))
 except Exception as e:
-    st.error(f"Ocorreu um erro ao carregar o arquivo: {e}")
+    st.error(f"Erro ao carregar os dados. Por favor, verifique se o arquivo '{file_name}' foi carregado corretamente.")
+    st.error(f"Detalhes do erro: {e}")
     st.stop()
 
 st.subheader("Sobre o Dataset")
@@ -398,6 +403,7 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
+
 
 
 
