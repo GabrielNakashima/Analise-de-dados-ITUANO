@@ -21,7 +21,7 @@ st.markdown("""
 - **Scouting de Jogadores:** Quais são as estatísticas detalhadas de um jogador específico?
 """)
 
-df = pd.read_csv("dados-completos-Ituano.csv")
+df = pd.read_csv("cp1_DataScience/dados-completos-Ituano.csv")
 
 st.subheader("Sobre o Dataset")
 st.markdown("""
@@ -385,3 +385,4 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
+
