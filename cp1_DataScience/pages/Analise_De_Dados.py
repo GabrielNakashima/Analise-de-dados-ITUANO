@@ -4,16 +4,20 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import scipy.stats as stats
 import numpy as np
+import os
+import io
 
 st.set_page_config(page_title="Análise de Dados - Ituano", layout="wide")
 
-st.title("Análise de Dados - Ituano FC (Últimos 3 anos)")
+st.title("Análise de Dados - Ituano FC")
 
 # ==============================
 # Perguntas de Análise
 # ==============================
 st.header("Perguntas Importantes sobre a Análise")
 st.markdown("""
+Este aplicativo foi construído para ajudar a responder perguntas-chave sobre o desempenho do Ituano FC. Explore os dados para descobrir:
+
 - **Consistência do Time:** A taxa de vitórias do time tem melhorado ou piorado ao longo do tempo?
 - **Desempenho Individual:** Quem são os jogadores mais impactantes da equipe em diferentes métricas, como gols, passes ou roubos de bola?
 - **Força em Campeonatos:** Qual o desempenho do time nos principais campeonatos? O time tem uma nota média melhor em um torneio do que em outro?
@@ -22,26 +26,29 @@ st.markdown("""
 """)
 
 # ==============================
-# Acessando o arquivo de dados de forma robusta
-# Usando a ferramenta `__content_fetcher__` para ler o conteúdo do arquivo
-# diretamente, sem depender de um caminho de arquivo.
+# Tratamento de erro para carregamento do arquivo
+#
+# Tenta carregar o arquivo usando caminhos relativos mais robustos.
+# A verificação abaixo tenta encontrar o arquivo em dois locais comuns:
+# 1. Na mesma pasta do script.
+# 2. Na pasta "pai", um nível acima na estrutura de diretórios.
 # ==============================
 file_name = "dados-completos-Ituano.csv"
-
+df = None
 try:
-    # Acessa o conteúdo do arquivo carregado como uma string
-    csv_content = __content_fetcher__.fetch(
-        query=file_name,
-        source_references=[{"id": "uploaded:dados-completos-Ituano.csv", "type": "uploaded"}]
-    )
-    # Lê o conteúdo do CSV a partir da string na memória usando `io.StringIO`
-    df = pd.read_csv(io.StringIO(csv_content))
+    if os.path.exists(file_name):
+        df = pd.read_csv(file_name)
+    elif os.path.exists(os.path.join("..", file_name)):
+        df = pd.read_csv(os.path.join("..", file_name))
+    else:
+        st.error(f"Erro: O arquivo '{file_name}' não foi encontrado nos locais esperados.")
+        st.error(f"Por favor, verifique se o arquivo está na mesma pasta que o script principal ou na pasta raiz do seu projeto.")
+        st.error(f"Caminho atual de execução: {os.getcwd()}")
+        st.stop()
 except Exception as e:
-    st.error(f"Erro ao carregar os dados. Por favor, verifique se o arquivo '{file_name}' foi carregado corretamente.")
-    st.error(f"Detalhes do erro: {e}")
+    st.error(f"Ocorreu um erro ao carregar o arquivo: {e}")
     st.stop()
-
-
+    
 st.subheader("Sobre o Dataset")
 st.markdown("""
 O conjunto de dados utilizado contém informações do **Ituano FC**, abrangendo estatísticas de jogos e desempenho de jogadores. Abaixo, uma descrição do tipo de dado de cada variável:
@@ -73,6 +80,7 @@ st.dataframe(df.head())
 # ==============================
 st.subheader("Porcentagem de Vitórias ao Longo do Tempo")
 st.markdown("""
+**Por que isso é importante?**
 Analisar a porcentagem de vitórias cumulativa é crucial para entender a consistência e a evolução do time. Uma linha ascendente indica que a equipe está melhorando seu desempenho, enquanto uma linha estável ou em declínio pode sinalizar uma fase de instabilidade.
 """)
 
@@ -112,11 +120,12 @@ st.pyplot(fig)
 # ==============================
 st.subheader("Ranking de Jogadores")
 st.markdown("""
+**Por que isso é importante?**
 O ranking de jogadores permite identificar os atletas com o melhor desempenho em diferentes áreas. Esta análise é essencial para entender os pontos fortes e fracos do elenco, auxiliar na tomada de decisões técnicas e reconhecer os jogadores mais consistentes ao longo do tempo.
 """)
 
 position_map = {
-    'F': 'Atacante',
+    'A': 'Atacante',
     'M': 'Meio-campista',
     'D': 'Defensor',
     'G': 'Goleiro'
@@ -141,7 +150,7 @@ metricas_map = {
     "Gols": "statistics_goals",
     "Passes": "statistics_total_pass",
     "Defesas": "statistics_saves",
-    "Chutes ao Gol": "statistics_on_target_scoring_attempt",
+    "Chutes no Alvo": "statistics_on_target_scoring_attempt",
     "Roubos de Bola": "statistics_total_tackle",
     "Minutos Jogados": "statistics_minutes_played",
     "Notas": "statistics_rating",
@@ -214,6 +223,7 @@ else:
 # ==============================
 st.subheader("Desempenho por Campeonato")
 st.markdown("""
+**Por que isso é importante?**
 A performance de um time pode variar bastante dependendo da competição. A análise de desempenho por campeonato ajuda a entender como o Ituano se adapta a diferentes níveis de adversários e a importância de cada torneio em sua trajetória.
 """)
 
@@ -267,6 +277,7 @@ for tournament in tournaments_to_show:
 # ==============================
 st.subheader("Análise de Vitórias por Local do Jogo")
 st.markdown("""
+**Por que isso é importante?**
 A "vantagem de jogar em casa" é um fator bem conhecido no futebol. Esta análise permite confirmar se o Ituano se beneficia de jogar no seu estádio e se seu desempenho fora de casa é um ponto a ser melhorado.
 """)
 
@@ -300,6 +311,7 @@ st.plotly_chart(fig_home_away)
 # ==============================
 st.subheader("Análise Inferencial: Vantagem de Casa")
 st.markdown("""
+**Por que isso é importante?**
 A análise de testes de hipótese e intervalos de confiança nos permite ir além da simples descrição dos dados.
 - **Intervalo de Confiança:** Nos dá uma estimativa do intervalo de valores prováveis para a verdadeira média de desempenho, com 95% de certeza. Isso mostra a precisão da nossa estimativa.
 - **Teste de Hipótese (Teste t):** Nos permite verificar se a diferença na nota média de desempenho entre jogos em casa e fora de casa é estatisticamente significativa, ou se é apenas resultado do acaso.
@@ -371,6 +383,7 @@ st.plotly_chart(fig_ci)
 # ==============================
 st.subheader("Pesquisa de Jogador")
 st.markdown("""
+**Por que isso é importante?**
 O recurso de pesquisa de jogador oferece uma visão detalhada das estatísticas de um atleta individual. É uma ferramenta útil para análise de desempenho, acompanhamento de evolução e para identificar pontos fortes e fracos de forma personalizada.
 """)
 
@@ -404,11 +417,3 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
-
-
-
-
-
-
-
-
