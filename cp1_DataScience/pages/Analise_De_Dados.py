@@ -22,23 +22,21 @@ st.markdown("""
 """)
 
 # ==============================
-# Acessando o arquivo de dados de forma robusta
-# O nome do arquivo foi fornecido por você
-# e é tratado como um arquivo carregado.
+# Tratamento de erro para carregamento do arquivo
+#
+# Tenta carregar o arquivo usando um caminho relativo.
+# O `../` indica que o script deve procurar o arquivo na
+# pasta "pai", um nível acima na estrutura de diretórios.
 # ==============================
-file_name = "dados-completos-Ituano.csv"
-
 try:
-    # Acessa o arquivo carregado
-    csv_content = __content_fetcher__.fetch(
-        query=file_name,
-        source_references=[{"id": "uploaded:dados-completos-Ituano.csv", "type": "uploaded"}]
-    )
-    # Lê o conteúdo do CSV a partir da string na memória
-    df = pd.read_csv(io.StringIO(csv_content))
+    file_path = "../dados-completos-Ituano.csv"
+    df = pd.read_csv(file_path)
+except FileNotFoundError:
+    st.error(f"Erro: O arquivo '{file_path}' não foi encontrado. Por favor, verifique se o arquivo está na pasta raiz do seu projeto (e não dentro de 'pages').")
+    st.error("Se o arquivo estiver em outro local, você precisará ajustar o caminho do arquivo no código.")
+    st.stop()
 except Exception as e:
-    st.error(f"Erro ao carregar os dados. Por favor, verifique se o arquivo '{file_name}' foi carregado corretamente.")
-    st.error(f"Detalhes do erro: {e}")
+    st.error(f"Ocorreu um erro ao carregar o arquivo: {e}")
     st.stop()
 
 st.subheader("Sobre o Dataset")
@@ -403,6 +401,7 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
+
 
 
 
