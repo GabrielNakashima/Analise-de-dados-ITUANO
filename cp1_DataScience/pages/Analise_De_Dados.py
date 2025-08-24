@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib as plt
 import plotly.express as px
 import scipy.stats as stats
 import numpy as np
@@ -385,3 +385,4 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
+
