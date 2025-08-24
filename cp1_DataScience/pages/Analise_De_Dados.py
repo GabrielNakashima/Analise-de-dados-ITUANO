@@ -21,7 +21,20 @@ st.markdown("""
 - **Scouting de Jogadores:** Quais são as estatísticas detalhadas de um jogador específico?
 """)
 
-df = pd.read_csv("../dados-completos-Ituano.csv")
+# ==============================
+# Tratamento de erro para carregamento do arquivo
+# ==============================
+file_path = "dados-completos-Ituano.csv"
+
+# Usando um bloco try-except para capturar o erro de arquivo não encontrado
+try:
+    df = pd.read_csv(file_path)
+except FileNotFoundError:
+    st.error(f"Erro: O arquivo '{file_path}' não foi encontrado. Por favor, verifique se o arquivo está na mesma pasta do seu script Python.")
+    st.stop()
+except Exception as e:
+    st.error(f"Ocorreu um erro ao carregar o arquivo: {e}")
+    st.stop()
 
 st.subheader("Sobre o Dataset")
 st.markdown("""
@@ -385,6 +398,7 @@ if selected_player:
         player_stats.loc[len(player_stats)] = [stat_name, total_value, mean_value]
 
     st.dataframe(player_stats)
+
 
 
 
